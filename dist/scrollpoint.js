@@ -1,12 +1,12 @@
 /*!
  * angular-ui-scrollpoint
  * https://github.com/angular-ui/ui-scrollpoint
- * Version: 2.1.1 - 2016-02-22T01:35:08.609Z
+ * Version: 2.1.1 - 2016-09-05T08:21:50.565Z
  * License: MIT
  */
 
 
-(function () { 
+(function () {
 'use strict';
 /**
  * Adds a 'ui-scrollpoint' class to the element when the page scrolls past it's position.
@@ -14,7 +14,8 @@
  *   Takes 300 (absolute) or -300 or +300 (relative to detected)
  */
 angular.module('ui.scrollpoint', []).directive('uiScrollpoint', ['$window', '$timeout', function ($window, $timeout) {
-
+        var counter = 0;
+        var elements = [];
         function getWindowScrollTop() {
             if (angular.isDefined($window.pageYOffset)) {
                 return $window.pageYOffset;
@@ -345,7 +346,7 @@ angular.module('ui.scrollpoint', []).directive('uiScrollpoint', ['$window', '$ti
                     if(!self.ready || !self.enabled){ return; }
 
                     var edgeHit = self.scrollEdgeHit();
-                    
+
                     // edgeHit >= 0 - scrollpoint is scrolled out of active view
                     // edgeHit < 0 - scrollpoint is in active view
 
@@ -358,7 +359,13 @@ angular.module('ui.scrollpoint', []).directive('uiScrollpoint', ['$window', '$ti
                         if(!self.hit){
                             // add the scrollpoint class
                             if(!self.$element.hasClass(self.scrollpointClass)){
-                                self.$element.addClass(self.scrollpointClass);
+                              elements.push(self.$element);
+                              for (var element of elements) {
+                                element[0].classList.remove(self.scrollpointClass + '-count-' + counter);
+                                element[0].classList.add(self.scrollpointClass + '-count-' + (counter + 1));
+                              }
+                              // self.$element.addClass(self.scrollpointClass);
+                              counter++;
                             }
                             fireActions = true;
                             self.hit = true;
@@ -368,8 +375,13 @@ angular.module('ui.scrollpoint', []).directive('uiScrollpoint', ['$window', '$ti
                         // SCROLLPOINT is IN by edgeHit pixels
                         if(self.hit || angular.isUndefined(self.hit)){
                             // remove the scrollpoint class
-                            if(self.$element.hasClass(self.scrollpointClass)){
-                                self.$element.removeClass(self.scrollpointClass);
+                            if(self.$element.hasClass(self.scrollpointClass + '-count-' + counter)){
+                              for (var element of elements) {
+                                element[0].classList.remove(self.scrollpointClass + '-count-' + counter);
+                                element[0].classList.add(self.scrollpointClass + '-count-' + (counter - 1));
+                              }
+                              counter--;
+                              // self.$element.removeClass(self.scrollpointClass);
                             }
                             fireActions = true;
                             self.hit = false;
@@ -464,7 +476,7 @@ angular.module('ui.scrollpoint', []).directive('uiScrollpoint', ['$window', '$ti
                         uiScrollpoint.reset();
                     }
                 });
-    
+
                 function resetTarget() {
                     uiScrollpoint.$target.on('scroll', uiScrollpoint.onScroll);
                     scope.$on('$destroy', function () {
