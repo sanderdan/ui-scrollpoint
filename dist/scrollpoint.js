@@ -14,7 +14,6 @@
  *   Takes 300 (absolute) or -300 or +300 (relative to detected)
  */
 angular.module('ui.scrollpoint', []).directive('uiScrollpoint', ['$window', '$timeout', function ($window, $timeout) {
-        var counter = 0;
         var elements = [];
         function getWindowScrollTop() {
             if (angular.isDefined($window.pageYOffset)) {
@@ -358,14 +357,16 @@ angular.module('ui.scrollpoint', []).directive('uiScrollpoint', ['$window', '$ti
                         // SCROLLPOINT is OUT by edgeHit pixels
                         if(!self.hit){
                             // add the scrollpoint class
-                            if(!self.$element.hasClass(self.scrollpointClass)){
-                              elements.push(self.$element);
+                            if(!self.$element.hasClass(self.scrollpointClass))
+                              self.$element.addClass(self.scrollpointClass);
+
+                            // update scrollpoint count class
+                            if(!self.$element.hasClass(self.scrollpointClass)) {
                               for (var element of elements) {
-                                element[0].classList.remove(self.scrollpointClass + '-count-' + counter);
-                                element[0].classList.add(self.scrollpointClass + '-count-' + (counter + 1));
+                                element[0].classList.remove(self.scrollpointClass + '-count-' + elements.length);
+                                element[0].classList.add(self.scrollpointClass + '-count-' + (elements.length + 1));
                               }
-                              // self.$element.addClass(self.scrollpointClass);
-                              counter++;
+                              elements.push(self.$element);
                             }
                             fireActions = true;
                             self.hit = true;
@@ -375,13 +376,17 @@ angular.module('ui.scrollpoint', []).directive('uiScrollpoint', ['$window', '$ti
                         // SCROLLPOINT is IN by edgeHit pixels
                         if(self.hit || angular.isUndefined(self.hit)){
                             // remove the scrollpoint class
-                            if(self.$element.hasClass(self.scrollpointClass + '-count-' + counter)){
+                            if(self.$element.hasClass(self.scrollpointClass))
+                              self.$element.removeClass(self.scrollpointClass);
+
+                            // update scrollpoint count class
+                            if(self.$element.hasClass(self.scrollpointClass + '-count-' + elements.length)){
                               for (var element of elements) {
-                                element[0].classList.remove(self.scrollpointClass + '-count-' + counter);
-                                element[0].classList.add(self.scrollpointClass + '-count-' + (counter - 1));
+                                element[0].classList.remove(self.scrollpointClass + '-count-' + elements.length);
+                                if (elements.length > 1)
+                                    element[0].classList.add(self.scrollpointClass + '-count-' + (elements.length - 1));
                               }
-                              counter--;
-                              // self.$element.removeClass(self.scrollpointClass);
+                              elements.pop();
                             }
                             fireActions = true;
                             self.hit = false;
