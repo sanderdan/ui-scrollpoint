@@ -4,6 +4,7 @@
  *   Takes 300 (absolute) or -300 or +300 (relative to detected)
  */
 angular.module('ui.scrollpoint', []).directive('uiScrollpoint', ['$window', '$timeout', function ($window, $timeout) {
+        var elements = [];
 
         function getWindowScrollTop() {
             if (angular.isDefined($window.pageYOffset)) {
@@ -347,8 +348,17 @@ angular.module('ui.scrollpoint', []).directive('uiScrollpoint', ['$window', '$ti
                         // SCROLLPOINT is OUT by edgeHit pixels
                         if(!self.hit){
                             // add the scrollpoint class
-                            if(!self.$element.hasClass(self.scrollpointClass)){
-                                self.$element.addClass(self.scrollpointClass);
+                            if(!self.$element.hasClass(self.scrollpointClass)) {
+                              self.$element.addClass(self.scrollpointClass);
+
+                              if (elements.indexOf(self.$element) === -1) {
+                                  elements.push(self.$element);
+                              }
+
+                              for (var k in elements) {
+                                elements[k][0].classList.remove(self.scrollpointClass + '-count-' + (elements.length - 1));
+                                elements[k][0].classList.add(self.scrollpointClass + '-count-' + elements.length);
+                              }
                             }
                             fireActions = true;
                             self.hit = true;
@@ -358,8 +368,17 @@ angular.module('ui.scrollpoint', []).directive('uiScrollpoint', ['$window', '$ti
                         // SCROLLPOINT is IN by edgeHit pixels
                         if(self.hit || angular.isUndefined(self.hit)){
                             // remove the scrollpoint class
-                            if(self.$element.hasClass(self.scrollpointClass)){
-                                self.$element.removeClass(self.scrollpointClass);
+                            if(self.$element.hasClass(self.scrollpointClass)) {
+                              self.$element.removeClass(self.scrollpointClass);
+                              
+                              // update scrollpoint count class
+                              for (var l in elements) {
+                                elements[l][0].classList.remove(self.scrollpointClass + '-count-' + elements.length);
+                                if (elements.length > 1 && elements[l][0] !== self.$element[0]) {
+                                    elements[l][0].classList.add(self.scrollpointClass + '-count-' + (elements.length - 1));
+                                }
+                              }
+                              elements.splice(elements.indexOf(self.$element), 1);
                             }
                             fireActions = true;
                             self.hit = false;
